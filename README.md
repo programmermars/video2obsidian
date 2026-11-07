@@ -73,6 +73,28 @@ Safety rules:
 When done, tell me how to start it, how to submit a link and where the notes are saved.
 ```
 
+## Optional: summaries with AgentChat
+
+Instead of an API or a local model, summaries can be written through **[AgentChat](https://github.com/ziwang-Physics/AgentChat)** by **[ziwang-Physics](https://github.com/ziwang-Physics)** (MIT licence). AgentChat drives the web chat pages of Gemini, ChatGPT or Claude in your own logged-in Chrome, so no API key is needed. It is a separate project: it is **not** included in this repository, and all credit for it goes to its author.
+
+1. Install AgentChat by following its own README (Node.js, `npm install`, then log in to the AI chat sites once in Chrome).
+2. Check it works: `node skills/AgentChat-OneWeb/index.js --smoke`
+3. In `config.json`, set these three values and put `"agentchat"` first in `summary_backends`:
+
+| Key | Example | Meaning |
+|---|---|---|
+| `agentchat_node` | `C:\\Program Files\\nodejs\\node.exe` | path to `node.exe` |
+| `agentchat_entry` | `C:\\path\\to\\AgentChat\\skills\\AgentChat-OneWeb\\index.js` | path to AgentChat's OneWeb entry file |
+| `agentchat_provider` | `gemini`, `chatgpt` or `claude` | which chat site to try first (AgentChat falls back to the others) |
+
+```json
+"summary_backends": ["agentchat", "openai"]
+```
+
+With this order, video2obsidian tries AgentChat first and falls back to your OpenAI-compatible backend (for example local Ollama) if AgentChat fails. Optional timeouts: `agentchat_timeout` and `agentchat_provider_timeout` (seconds).
+
+> **Terms of service warning.** Automating the web chat interfaces of ChatGPT, Claude or Gemini may break those services' terms of use and can lead to rate limits or account restrictions. You are responsible for checking the terms of each service and for how you use your own accounts. If in doubt, use a local model (Ollama) or an official API instead.
+
 ## Security
 
 The app has **no login or password**. It listens on `127.0.0.1` by default, so only your own computer can reach it. To use it from your phone, use a private network such as Tailscale (`phone-access.bat`). Never expose it to the public internet.

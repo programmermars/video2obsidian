@@ -17,3 +17,8 @@ video2obsidian does not bundle third-party source code. It installs the followin
 | Pillow | 13.0.0 | MIT-CMU |
 
 Optional external tools (not included, installed separately by the user): Obsidian, Tailscale, an OpenAI-compatible LLM endpoint (for example Ollama), and AgentChat.
+
+## Optional external tool (not bundled)
+
+- **AgentChat** by ziwang-Physics, MIT licence: https://github.com/ziwang-Physics/AgentChat
+  Not included in this repository. video2obsidian only calls it as a separate program when the user configures it.
