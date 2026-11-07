@@ -37,6 +37,7 @@ if errorlevel 1 (
   echo INSTALL_FAIL pip
   exit /b 1
 )
+if not exist "config.json" copy /y "config.example.json" "config.json" >nul
 echo downloading whisper model...
 ".venv\Scripts\python.exe" -c "import json;from faster_whisper import WhisperModel;m=json.load(open('config.json',encoding='utf-8'))['whisper_model'];WhisperModel(m,device='cpu',compute_type='int8');print('WHISPER_OK',m)"
 if errorlevel 1 (

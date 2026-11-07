@@ -16,9 +16,9 @@ Paste a link (or share it from a phone), and the tool downloads the video, trans
 
 ## Quick start (Windows)
 
-1. Install Python 3.11+.
-2. Run `install.bat` (creates `.venv` and installs `requirements.txt`).
-3. Copy `config.example.json` to `config.json` and set at least `vault_path` and `llm_base_url`.
+1. Install Python 3.11 or 3.12 (3.13 is not supported yet: `rapidocr_onnxruntime` has no 3.13 build).
+2. Run `install.bat` (creates `.venv`, installs `requirements.txt`, creates `config.json` from `config.example.json` and downloads the Whisper model).
+3. Edit `config.json` and set at least `vault_path` and `llm_base_url`.
 4. Run `start.bat`, then open http://127.0.0.1:8791
 
 ## API (main endpoints)

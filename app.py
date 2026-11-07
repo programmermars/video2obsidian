@@ -451,7 +451,9 @@ def health() -> dict:
         checks["agentchat_chrome"] = True
     except Exception:  # noqa: BLE001
         checks["agentchat_chrome"] = False  # 没开着也没关系，AgentChat 会自动启动
-    checks["ok"] = checks["vault"] and checks["notes_dir"] and checks["agentchat_files"] and checks["disk_free_gb"] > 2
+    needs_agentchat = "agentchat" in cfg.get("summary_backends", ["agentchat", "openai"])
+    checks["ok"] = (checks["vault"] and (checks["agentchat_files"] or not needs_agentchat)
+                    and checks["disk_free_gb"] > 2)  # notes_dir 会在写第一篇笔记时自动创建
     return checks
 
 
