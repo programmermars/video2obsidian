@@ -4,7 +4,7 @@ Turn a video link into a searchable, timestamped note in an Obsidian vault.
 
 Paste a link (or share it from a phone), and the tool downloads the video, transcribes it, writes an AI summary and saves a Markdown note with key frames and clickable timestamps that jump to the matching part of the transcript.
 
-> Personal learning project by **Chong Jia You** ([@programmermars](https://github.com/programmermars)). Built with AI coding assistants; the design, integration, testing and debugging are my own work.
+> Created and maintained by **Chong Jia You** ([@programmermars](https://github.com/programmermars)). Built with the help of AI coding assistants; the design, integration, testing and debugging are my own work. See [Credits](#credits).
 
 ## What it does
 
@@ -117,6 +117,28 @@ Verified with real runs (Douyin and Instagram videos, GPU and CPU transcription,
 - This tool is for **personal study notes**. Only process videos you are allowed to download, and follow each platform's terms of service and local copyright law.
 - Do not redistribute downloaded videos, transcripts or summaries of other people's content.
 - This repository contains **no** downloaded media, transcripts, notes, cookies or API keys. Keep your own `config.json` private.
+
+## Credits
+
+**Author**
+- **Chong Jia You** ([@programmermars](https://github.com/programmermars)): idea, system design, integration of the download → transcription → summary → notes pipeline, testing on real videos, debugging and maintenance.
+
+**Optional integration**
+- **[AgentChat](https://github.com/ziwang-Physics/AgentChat)** by **[ziwang-Physics](https://github.com/ziwang-Physics)** (MIT): used for web-chat summaries when the user configures it. Not bundled; all credit for AgentChat goes to its author.
+
+**Open-source projects this tool is built on**
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper) by SYSTRAN (MIT): speech-to-text
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense): video downloads
+- [FastAPI](https://github.com/fastapi/fastapi) (MIT) and [Uvicorn](https://github.com/encode/uvicorn) (BSD-3-Clause): web UI and API
+- [Playwright](https://github.com/microsoft/playwright-python) by Microsoft (Apache-2.0): Douyin downloads in a headless browser
+- [RapidOCR](https://github.com/RapidAI/RapidOCR) (Apache-2.0): on-screen subtitle OCR
+- [OpenCC](https://github.com/yichen0831/opencc-python) (Apache-2.0): Traditional → Simplified Chinese
+- [FFmpeg](https://ffmpeg.org) via imageio-ffmpeg: audio and key-frame extraction
+
+Full package and licence list: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+**AI assistance**
+- Parts of the code and documentation were written with AI coding assistants (including Claude). Some commits list Claude as co-author for transparency. All changes were reviewed, tested and integrated by the author.
 
 ## Licence
 

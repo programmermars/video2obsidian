@@ -16,7 +16,7 @@ video2obsidian does not bundle third-party source code. It installs the followin
 | rapidocr_onnxruntime | 1.4.4 | Apache-2.0 |
 | Pillow | 13.0.0 | MIT-CMU |
 
-Optional external tools (not included, installed separately by the user): Obsidian, Tailscale, an OpenAI-compatible LLM endpoint (for example Ollama), and AgentChat.
+Optional external tools (not included, installed separately by the user): Obsidian, Tailscale, and an OpenAI-compatible LLM endpoint (for example Ollama). AgentChat is listed below.
 
 ## Optional external tool (not bundled)
 
