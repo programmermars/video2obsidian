@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6b4fd8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="转笔记">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>视频转 Obsidian</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1d1d1b; --mute:#6b6a66; --line:#e6e3dc; --acc:#6b4fd8; --acc2:#efeafe; --ok:#2f8a4f; --bad:#c0392b; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141417; --card:#1f1f24; --ink:#ececec; --mute:#9a9aa2; --line:#323239; --acc:#9d86ff; --acc2:#2a2540; --ok:#57c07c; --bad:#ff7a6b; } }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); }
+  body { font:16px/1.55 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom)); }
+  header { display:flex; align-items:center; gap:10px; margin-bottom: 10px; }
+  header img { width:34px; height:34px; border-radius:9px; }
+  h1 { font-size: 20px; margin: 0; }
+  .pills { display:flex; gap:6px; flex-wrap:wrap; font-size:12px; margin: 0 0 12px; }
+  .pill { border:1px solid var(--line); border-radius:99px; padding:2px 10px; color:var(--mute); white-space:nowrap; }
+  .pill.on { color:var(--ok); border-color:var(--ok); }
+  .pill.off { color:var(--bad); border-color:var(--bad); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; }
+  .card h2 { font-size:15px; margin:0 0 10px; color:var(--mute); font-weight:600; }
+  textarea { width:100%; min-height:88px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:12px; font:inherit; background:transparent; color:inherit; }
+  textarea:focus { outline: 2px solid var(--acc); border-color: transparent; }
+  .btns { display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; }
+  button { font:inherit; border:0; border-radius:12px; padding:12px 14px; cursor:pointer; min-height:46px; }
+  .primary { background:var(--acc); color:#fff; font-weight:600; }
+  .soft { background:var(--acc2); color:var(--acc); font-weight:600; }
+  .ghost { background:transparent; color:var(--acc); border:1px solid var(--line); min-height:38px; padding:7px 12px; font-size:14px; }
+  button:disabled { opacity:.5; }
+  .opts { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:14px; color:var(--mute); }
+  .opts label { display:flex; gap:6px; align-items:center; }
+  .opts input { width:18px; height:18px; accent-color: var(--acc); }
+  .upload { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:14px; color:var(--mute); }
+  .upload input { flex:1; min-width:0; font-size:13px; }
+  .msg { font-size:14px; margin-top:8px; min-height: 1em; }
+  .msg.bad { color:var(--bad); } .msg.ok { color:var(--ok); }
+  .job { border-top:1px solid var(--line); padding:12px 0; }
+  .job:first-child { border-top:0; padding-top:0; }
+  .job .t { font-weight:600; word-break: break-all; }
+  .steps { display:flex; gap:4px; margin:8px 0 4px; }
+  .steps span { flex:1; height:5px; border-radius:5px; background:var(--line); position:relative; overflow:hidden; }
+  .steps span.done { background:var(--acc); }
+  .steps span.cur::after { content:""; position:absolute; inset:0; width:var(--p,30%); background:var(--acc); }
+  .s { font-size:13px; color:var(--mute); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  details { font-size:12px; color:var(--mute); margin-top:6px; }
+  pre { white-space:pre-wrap; margin:6px 0 0; font:12px/1.5 ui-monospace, Consolas, monospace; }
+  .err { color:var(--bad); font-size:14px; margin-top:4px; }
+  .note { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--line); }
+  .note:first-child { border-top:0; }
+  .note .n { flex:1; min-width:0; cursor:pointer; }
+  .note .n b { display:block; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .empty { color:var(--mute); font-size:14px; }
+  footer { display:flex; gap:8px; flex-wrap:wrap; }
+  /* viewer */
+  .sheet { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:10; }
+  .sheet.show { display:block; }
+  .panel { position:absolute; left:0; right:0; bottom:0; top:max(40px, env(safe-area-inset-top)); background:var(--card); border-radius:18px 18px 0 0; display:flex; flex-direction:column; max-width:760px; margin:0 auto; }
+  .panel .bar { display:flex; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid var(--line); }
+  .panel .bar b { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .panel .body { overflow:auto; padding:14px 16px calc(30px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+  .md h1 { font-size:20px; } .md h2 { font-size:17px; margin-top:22px; } .md h3 { font-size:15px; margin:16px 0 6px; color:var(--acc); }
+  .md ul { padding-left:20px; margin:6px 0; } .md li { margin:4px 0; }
+  .md blockquote { margin:8px 0; padding:6px 12px; border-left:3px solid var(--line); color:var(--mute); }
+  .md code { font-size:12px; background:var(--acc2); padding:1px 5px; border-radius:5px; word-break: break-all; }
+  .md p { margin:8px 0; scroll-margin-top: 10px; }
+  .md a.ts { color:var(--acc); font-weight:600; text-decoration:none; background:var(--acc2); padding:0 5px; border-radius:5px; }
+  .md p:target { background: var(--acc2); border-radius: 8px; }
+  .md { overflow-wrap:anywhere; }
+  .toast { position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:12px; font-size:14px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:20; }
+  .toast.show { opacity:1; }
+  .mobile a[href^="obsidian:"] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header><img src="/icon.svg" alt=""><h1>视频转 Obsidian</h1></header>
+  <div class="pills" id="status"><span class="pill">连接中…</span></div>
+
+  <div class="card">
+    <textarea id="text" placeholder="粘贴抖音分享文案或链接（一行一条）&#10;也支持 YouTube / B站"></textarea>
+    <div class="btns">
+      <button class="soft" id="paste">📋 粘贴并开始</button>
+      <button class="primary" id="go">开始</button>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="sum" checked> AI 摘要</label>
+      <label><input type="checkbox" id="drive"> ☁ 视频存到 Google Drive</label>
+      <label><input type="checkbox" id="force"> 重新处理已有的</label>
+      <label title="默认只下低码率：转文字只要声音，快好几倍。要存到 Drive 或要清晰截图时再勾"><input type="checkbox" id="hd"> 高清下载（更慢）</label>
+      <label title="只把视频下载下来放进 Google Drive：不转文字、不做摘要、不写笔记"><input type="checkbox" id="onlydrive"> ☁ 只存 Drive（不转录）</label>
+    </div>
+    <div class="upload">
+      <input type="file" id="file" accept="video/*,audio/*">
+      <button class="ghost" id="up">上传</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>任务</h2>
+    <div id="jobs"><div class="empty">还没有任务</div></div>
+  </div>
+
+  <div class="card">
+    <h2>搜索所有视频</h2>
+    <div class="row" style="margin:0"><input id="q" type="search" placeholder="例如：体脂率、Claude Code" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;background:transparent;color:inherit"><button class="soft" id="qgo" style="min-height:42px">搜索</button></div>
+    <div id="qres" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h2>最近的笔记</h2>
+    <div id="notes"><div class="empty">加载中…</div></div>
+  </div>
+
+  <footer>
+    <button class="ghost" id="login">打开抖音登录窗口</button>
+    <button class="ghost" id="restart">重启服务</button>
+  </footer>
+</main>
+
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <div class="bar"><b id="vtitle"></b><button class="ghost" id="vshare">分享版</button><a class="ghost" id="vopen" style="text-decoration:none">Obsidian</a><button class="ghost" id="vclose">关闭</button></div>
+    <div class="body md" id="vbody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const toast = t => { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("show"), 2600); };
+const msg = (t, cls = "") => { $("#msg").textContent = t; $("#msg").className = "msg " + cls; };
+const STAGES = ["fetch", "transcribe", "summarize", "write"];
+// 手机上没有电脑里的 Obsidian 库，obsidian:// 链接打不开 → 手机端隐藏这些按钮，用「查看笔记」
+const MOBILE = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+if (MOBILE) document.documentElement.classList.add("mobile");
+const seen = new Set();
+
+async function status() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    $("#status").innerHTML = [
+      `<span class="pill ${s.vault_ok ? "on" : "off"}">库 ${s.vault_ok ? "已连接" : "找不到"}</span>`,
+      `<span class="pill ${s.rtx ? "on" : ""}">${s.rtx ? "GPU 转录" : "CPU 转录"}</span>`,
+      `<span class="pill ${s.agentchat || s.llm ? "on" : ""}">摘要 ${s.agentchat ? "AgentChat" : (s.llm ? "qwen" : "不可用")}</span>`,
+    ].join("");
+    const dbox = $("#drive");
+    if (!s.drive_ready) { dbox.disabled = true; dbox.parentElement.title = "还没设置 Google Drive 文件夹"; dbox.parentElement.style.opacity = .5; }
+    else if (!dbox.dataset.init) { dbox.checked = s.drive_default; dbox.dataset.init = 1; }
+    const h = await (await fetch("/api/health")).json();
+    if (!h.ok) $("#status").innerHTML += `<span class="pill off" title="${esc(JSON.stringify(h))}">⚠ 自检有问题</span>`;
+    else if (h.disk_free_gb < 5) $("#status").innerHTML += `<span class="pill off">磁盘仅剩 ${h.disk_free_gb}GB</span>`;
+  } catch (e) { $("#status").innerHTML = `<span class="pill off">服务未响应</span>`; }
+}
+
+function stepBar(j) {
+  const idx = j.stage === "done" ? 4 : STAGES.indexOf(j.stage);
+  return `<div class="steps">${STAGES.map((st, i) => {
+    const cls = i < idx ? "done" : (i === idx ? "cur" : "");
+    const p = st === "transcribe" && i === idx ? `style="--p:${Math.max(4, j.progress)}%"` : "";
+    return `<span class="${cls}" ${p}></span>`;
+  }).join("")}</div>`;
+}
+
+function statusLine(j) {
+  if (j.stage === "transcribe") return `转文字 ${j.progress}%${j.eta_min ? ` · 约剩 ${j.eta_min} 分钟` : ""}`;
+  return j.status;
+}
+
+async function jobs() {
+  let list;
+  try { list = await (await fetch("/api/jobs")).json(); } catch (e) { return; }
+  if (!list.length) return;
+  for (const j of list) {
+    if (j.stage === "done" && !seen.has(j.id)) {
+      if (seen.size || document.visibilityState === "visible") { toast("✅ 完成：" + (j.title || j.result?.title || "")); navigator.vibrate?.(80); }
+      notesList();
+    }
+    if (j.stage === "done" || j.stage === "error") seen.add(j.id);
+  }
+  $("#jobs").innerHTML = list.map(j => {
+    const done = j.stage === "done", bad = j.stage === "error";
+    return `<div class="job">
+      <div class="t">${esc(j.title || j.result?.title || "处理中…")}</div>
+      ${done || bad ? "" : stepBar(j)}
+      <div class="s">${esc(j.created)} · ${esc(statusLine(j))}</div>
+      ${bad ? `<div class="err">${esc(j.error)}</div>` : ""}
+      ${j.drive ? `<div class="s">☁ 视频已放进 Google Drive</div>` : ""}
+      ${done && j.result && j.result.note ? `<div class="row"><button class="soft" data-view="${esc(j.result.note)}">查看笔记</button><a class="ghost" style="text-decoration:none" href="${esc(j.result.uri)}">Obsidian 打开</a></div>` : ""}
+      <details><summary>日志</summary><pre>${esc(j.log.join("\n"))}</pre></details>
+    </div>`;
+  }).join("");
+}
+
+async function notesList() {
+  let ns;
+  try { ns = await (await fetch("/api/notes")).json(); } catch (e) { return; }
+  $("#notes").innerHTML = ns.length ? ns.map(n => {
+    const m = n.name.match(/^(\d{4}-\d{2}-\d{2}) - (.*?)(?: - ([^-]*))?$/) || [];
+    return `<div class="note"><div class="n" data-view="${esc(n.path)}"><b>${esc(m[2] || n.name)}</b><span class="s">${esc([m[3], m[1]].filter(Boolean).join(" · "))}</span></div>
+      ${n.has_summary ? '<span class="pill on">有摘要</span>' : `<button class="ghost" data-sum="${esc(n.path)}">补摘要</button>`}</div>`;
+  }).join("") : '<div class="empty">还没有笔记</div>';
+}
+
+// ---- minimal markdown viewer
+function md(src) {
+  src = src.replace(/^---[\s\S]*?\n---\n/, "");
+  // 手机上先看 AI 摘要：把「## AI 摘要」整节挪到标题后面
+  const parts = src.split(/\n(?=## )/);
+  const i = parts.findIndex(p => p.startsWith("## AI 摘要"));
+  if (i > 1) { const [sec] = parts.splice(i, 1); parts.splice(1, 0, sec); src = parts.join("\n"); }
+  const out = []; let list = false;
+  const inline = t => esc(t).replace(/\[\[#\^(t\d+)\|([^\]]+)\]\]/g, '<a href="#$1" class="ts">$2</a>').replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  for (let line of src.split("\n")) {  // 2026-11-06 const→let：下一行要改写 line
+    line = line.replace(/!\[\[([^|\]]+\.(?:jpg|png))(?:\|\d+)?\]\]/g, (m, p) => `\u0000IMG${p}\u0000`);
+    const h = line.match(/^(#{1,3}) (.*)/), li = line.match(/^\s*[-*] (.*)/), q = line.match(/^> ?(.*)/);
+    if (!li && list) { out.push("</ul>"); list = false; }
+    if (h) out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+    else if (li) { if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${inline(li[1])}</li>`); }
+    else if (q) out.push(`<blockquote>${inline(q[1])}</blockquote>`);
+    else if (line.trim()) {
+      const b = line.match(/ \^(t\d+)\s*$/);
+      out.push(b ? `<p id="${b[1]}">${inline(line.replace(/ \^t\d+\s*$/, ""))}</p>` : `<p>${inline(line)}</p>`);
+    }
+  }
+  if (list) out.push("</ul>");
+  return out.join("").replace(/\u0000IMG([^\u0000]+)\u0000/g, (m, p) => `<img src="/api/frame?path=${encodeURIComponent(p)}" loading="lazy" style="display:block;max-width:100%;border-radius:10px;margin:6px 0">`);
+}
+
+let CUR = null;
+async function view(path, bid) {
+  const r = await fetch("/api/note?path=" + encodeURIComponent(path));
+  if (!r.ok) { toast("打不开这篇笔记"); return; }
+  const n = await r.json();
+  $("#vtitle").textContent = n.name; $("#vopen").href = n.uri;
+  CUR = n;
+  $("#vbody").innerHTML = md(n.markdown); $("#vbody").scrollTop = 0;
+  $("#sheet").classList.add("show");
+  if (bid) setTimeout(() => { const el = document.getElementById(bid); if (el) { el.scrollIntoView({ block: "start" }); el.style.background = "var(--acc2)"; } }, 60);
+}
+
+async function submit(text) {
+  if (!text.trim()) { msg("先粘贴链接", "bad"); return; }
+  const fd = new FormData();
+  fd.append("text", text); fd.append("summarize", $("#sum").checked); fd.append("force", $("#force").checked);
+  fd.append("drive", $("#drive").checked); fd.append("hd", $("#hd").checked); fd.append("only_drive", $("#onlydrive").checked);
+  const r = await fetch("/api/jobs", { method: "POST", body: fd });
+  if (!r.ok) { msg((await r.json()).detail || "提交失败", "bad"); return; }
+  const res = await r.json(), n = res.ids.length;
+  $("#text").value = ""; msg(`已加入 ${n} 个任务` + (res.skipped ? `（跳过 ${res.skipped} 行不是视频的链接）` : ""), "ok"); jobs();
+  resetOneShot();
+}
+
+$("#go").onclick = () => submit($("#text").value);
+// ONESHOT-BEGIN（2026-11-04）
+// 「只存 Drive」「重新处理」只对这一次提交有效：提交后自动取消，免得下一条视频忘了取消
+// （下一条只存 Drive 不写笔记，或者把已有笔记覆盖掉）。
+function resetOneShot() {
+  if ($("#onlydrive").checked) { $("#onlydrive").checked = false; $("#onlydrive").onchange(); }
+  $("#force").checked = false;
+}
+// 勾「只存 Drive」时顺手勾上高清（存档一般要清晰版本）；取消「只存 Drive」时，
+// 如果高清是它顺手勾的，就一起取消。用户自己动过高清框，就按用户的来。
+let hdAuto = false;
+$("#onlydrive").onchange = () => {
+  if ($("#onlydrive").checked) { if (!$("#hd").checked) { $("#hd").checked = true; hdAuto = true; } }
+  else if (hdAuto) { $("#hd").checked = false; hdAuto = false; }
+};
+$("#hd").onchange = () => { hdAuto = false; };
+// ONESHOT-END
+// 勾选状态记成默认值：手机从抖音「分享」进来时也照这个设置
+$("#drive").onchange = () => { const fd = new FormData(); fd.append("on", $("#drive").checked); fetch("/api/drive-default", { method: "POST", body: fd }); toast($("#drive").checked ? "以后的视频都会存到 Google Drive" : "以后不再存视频"); };
+$("#paste").onclick = async () => {
+  try { const t = await navigator.clipboard.readText(); $("#text").value = t; submit(t); }
+  catch (e) { $("#text").focus(); msg("浏览器不允许读取剪贴板：请长按输入框粘贴后点「开始」", "bad"); }
+};
+$("#up").onclick = async () => {
+  const f = $("#file").files[0]; if (!f) { msg("先选择文件", "bad"); return; }
+  const fd = new FormData(); fd.append("file", f); fd.append("summarize", $("#sum").checked); fd.append("drive", $("#drive").checked);
+  $("#up").disabled = true; msg("上传中…");
+  const r = await fetch("/api/upload", { method: "POST", body: fd });
+  $("#up").disabled = false; $("#file").value = "";
+  msg(r.ok ? "已上传，开始转录" : "上传失败", r.ok ? "ok" : "bad"); jobs();
+};
+$("#login").onclick = () => { fetch("/api/login-browser", { method: "POST" }); toast("已在电脑上打开登录窗口"); };
+$("#restart").onclick = async () => {
+  if (!confirm("重启服务？")) return;
+  const r = await fetch("/api/restart", { method: "POST" });
+  if (!r.ok) { toast((await r.json()).detail || "不能重启"); return; }
+  toast("重启中…"); setTimeout(() => location.reload(), 6000);
+};
+document.addEventListener("click", async e => {
+  const v = e.target.closest("[data-view]"); if (v) { view(v.dataset.view, v.dataset.bid); return; }
+  const s = e.target.closest("[data-sum]");
+  if (s) { const fd = new FormData(); fd.append("path", s.dataset.sum); s.disabled = true; await fetch("/api/summarize-note", { method: "POST", body: fd }); toast("已加入摘要任务"); jobs(); }
+});
+$("#vclose").onclick = () => $("#sheet").classList.remove("show");
+$("#sheet").onclick = e => { if (e.target.id === "sheet") $("#sheet").classList.remove("show"); };
+
+$("#vbody").addEventListener("click", e => {
+  const a = e.target.closest("a.ts"); if (!a) return;
+  e.preventDefault(); const el = document.getElementById(a.getAttribute("href").slice(1));
+  if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); el.style.background = "var(--acc2)"; setTimeout(() => el.style.background = "", 1800); }
+});
+async function doSearch() {
+  const q = $("#q").value.trim(); if (!q) return;
+  $("#qres").innerHTML = '<div class="empty">搜索中…</div>';
+  const rs = await (await fetch("/api/search?q=" + encodeURIComponent(q))).json();
+  const hl = t => esc(t).split(esc(q)).join(`<b style="color:var(--acc)">${esc(q)}</b>`);
+  $("#qres").innerHTML = rs.length ? rs.map(r => `<div class="note" style="display:block">
+      <b>${esc(r.title)}</b>
+      ${r.hits.map(h => `<div class="s" style="cursor:pointer;margin:4px 0" data-view="${esc(r.path)}" data-bid="${esc(h.bid)}">${h.ts ? `<span class="pill">${esc(h.ts)}</span> ` : ""}${hl(h.text)}</div>`).join("")}
+    </div>`).join("") : '<div class="empty">没有找到</div>';
+}
+$("#qgo").onclick = doSearch;
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+
+function shareText(n) {
+  const src = n.markdown.replace(/^---[\s\S]*?\n---\n/, "");
+  const fm = n.markdown.match(/^---[\s\S]*?\n---\n/)?.[0] || "";
+  const val = k => (fm.match(new RegExp("^" + k + ":\\s*\"?(.*?)\"?\\s*$", "m")) || [])[1] || "";
+  const sec = name => { const m = src.match(new RegExp("### " + name + "\\n([\\s\\S]*?)(?=\\n### |\\n## |$)")); return m ? m[1].trim() : ""; };
+  const clean = t => t.replace(/\[\[#\^t\d+\|([^\]]+)\]\]/g, "($1)").replace(/\*\*/g, "").replace(/^- /gm, "• ");
+  const parts = [`📺 ${val("title") || n.name}`, `👤 ${val("creator")}`];
+  const core = sec("一句话核心"); if (core) parts.push("", "【一句话】" + clean(core));
+  const pts = sec("关键要点"); if (pts) parts.push("", "【要点】", clean(pts));
+  const act = sec("可执行的行动"); if (act && !/^- 无$/.test(act)) parts.push("", "【可以怎么做】", clean(act));
+  parts.push("", "🔗 " + val("url"), "（AI 根据视频整理，仅供参考）");
+  return parts.join("\n");
+}
+$("#vshare").onclick = async () => {
+  if (!CUR) return;
+  const t = shareText(CUR);
+  try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) { if (e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(t); toast("已复制分享版，可以直接粘贴到 WhatsApp"); }
+  catch (e) { prompt("复制下面的内容：", t); }
+};
+const sp = new URLSearchParams(location.search).get("shared");
+if (sp) { toast(sp === "nolink" ? "分享内容里没有找到链接" : "✅ 已加入任务"); history.replaceState(null, "", "/"); }
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+status(); jobs(); notesList();
+setInterval(jobs, 2000); setInterval(status, 30000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { jobs(); notesList(); } });
+</script>
+</body>
+</html>

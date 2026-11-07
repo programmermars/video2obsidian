@@ -1,0 +1,32 @@
+# 专有名词表（改完从下一条视频开始生效，不用重启）
+# 1) 一行一个正确写法：转文字时会提示模型优先识别这些词，AI 摘要也会参考
+# 2) "错词 => 正确词"：转文字后自动替换（只写你确定的，免得误伤）
+# 以 # 开头的是注释
+# --- AI / 工具 ---
+Claude
+Claude Code
+Codex
+ChatGPT
+Gemini
+DeepSeek
+Qwen
+Kimi
+Ollama
+Obsidian
+AgentChat
+Agent
+MCP
+Skill
+n8n
+Cursor
+Tailscale
+Power Automate
+RAG
+Token
+API
+CLI
+Prompt
+vibe coding
+提示词
+上下文
+大模型

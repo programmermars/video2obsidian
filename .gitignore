@@ -1,0 +1,20 @@
+# local config and secrets
+config.json
+.env
+# runtime data, never publish
+data/
+logs/
+_backup/
+_archive/
+_test_vault/
+*.log
+*.mp4
+*.m4a
+*.mp3
+*.wav
+*.transcript.*
+# environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
