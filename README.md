@@ -127,15 +127,27 @@ Verified with real runs (Douyin and Instagram videos, GPU and CPU transcription,
 - **[AgentChat](https://github.com/ziwang-Physics/AgentChat)** by **[ziwang-Physics](https://github.com/ziwang-Physics)** (MIT): used for web-chat summaries when the user configures it. Not bundled; all credit for AgentChat goes to its author.
 
 **Open-source projects this tool is built on**
-- [faster-whisper](https://github.com/SYSTRAN/faster-whisper) by SYSTRAN (MIT): speech-to-text
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense): video downloads
-- [FastAPI](https://github.com/fastapi/fastapi) (MIT) and [Uvicorn](https://github.com/encode/uvicorn) (BSD-3-Clause): web UI and API
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) by the yt-dlp contributors (Unlicense): video downloads
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper) by SYSTRAN (MIT): speech-to-text, running on [CTranslate2](https://github.com/OpenNMT/CTranslate2) by OpenNMT (MIT)
+- [Whisper](https://github.com/openai/whisper) speech models by OpenAI (MIT); the converted model files are downloaded from [Hugging Face](https://huggingface.co/Systran) via [huggingface_hub](https://github.com/huggingface/huggingface_hub) (Apache-2.0)
+- [FastAPI](https://github.com/fastapi/fastapi) (MIT), [Uvicorn](https://github.com/encode/uvicorn) (BSD-3-Clause) and [python-multipart](https://github.com/Kludex/python-multipart) (Apache-2.0): web UI and API
 - [Playwright](https://github.com/microsoft/playwright-python) by Microsoft (Apache-2.0): Douyin downloads in a headless browser
-- [RapidOCR](https://github.com/RapidAI/RapidOCR) (Apache-2.0): on-screen subtitle OCR
+- [RapidOCR](https://github.com/RapidAI/RapidOCR) (Apache-2.0) on [ONNX Runtime](https://github.com/microsoft/onnxruntime) by Microsoft (MIT): on-screen subtitle OCR
 - [OpenCC](https://github.com/yichen0831/opencc-python) (Apache-2.0): Traditional → Simplified Chinese
-- [FFmpeg](https://ffmpeg.org) via imageio-ffmpeg: audio and key-frame extraction
+- [FFmpeg](https://ffmpeg.org) via [imageio-ffmpeg](https://github.com/imageio/imageio-ffmpeg) (BSD-2-Clause; FFmpeg has its own licence): audio and key-frame extraction
+- [Requests](https://github.com/psf/requests) (Apache-2.0) and [Pillow](https://github.com/python-pillow/Pillow) (MIT-CMU)
 
 Full package and licence list: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+**Tools and services it can work with (installed separately, not bundled)**
+- [Ollama](https://github.com/ollama/ollama) (MIT): runs a local LLM for free summaries. Each model you pull (for example [Qwen](https://github.com/QwenLM) by Alibaba Cloud's Qwen team) has its own licence; check it before use.
+- [Obsidian](https://obsidian.md): the note app used to view the vault. Obsidian is proprietary software and is not affiliated with this project.
+- [Tailscale](https://tailscale.com): private network for phone access (`phone-access.bat`).
+- Google Drive for desktop: optional copy of downloaded videos.
+- Any OpenAI-compatible API (for example OpenAI, DeepSeek), used with the user's own key and subject to that provider's terms.
+
+**Names and trademarks**
+- Douyin, YouTube, Bilibili, Instagram, TikTok, Obsidian, ChatGPT, Claude, Gemini and other names are trademarks of their owners. This project is independent and is not affiliated with or endorsed by any of them.
 
 **AI assistance**
 - Parts of the code and documentation were written with AI coding assistants (including Claude). Some commits list Claude as co-author for transparency. All changes were reviewed, tested and integrated by the author.
