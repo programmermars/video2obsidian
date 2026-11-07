@@ -42,7 +42,7 @@ If Chrome or Edge is not installed and you want Douyin downloads, also run `.ven
 
 **Check it works**: open http://127.0.0.1:8791/api/health and look for `"ok": true`.
 
-Both commands were tested from a clean install (Windows 11 with Python 3.11, Linux with Python 3.12).
+Both commands were tested from a clean install (Windows with Python 3.11, Linux with Python 3.12).
 
 ### Install with an AI assistant
 
